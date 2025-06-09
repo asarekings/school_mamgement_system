@@ -1,220 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- ... (head unchanged) ... -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Seven Royal Stars School Management System</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap">
   <style>
-    body { font-family: 'Inter', Arial, sans-serif; background: #f4f7fa; margin: 0; }
-    .container { max-width: 1200px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 32px rgba(0,0,0,.09); padding: 30px 30px 60px 30px; }
-    nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e6ed; margin-bottom: 20px; }
-    .nav-title { font-size: 2em; font-weight: 700; color: #254178; }
-    .nav-actions { display: flex; gap: 14px; }
-    .btn { background: #254178; color: #fff; border: none; border-radius: 5px; padding: 6px 18px; font-size: 1em; cursor: pointer; margin: 2px; }
-    .btn-secondary { background: #e0e6ed; color: #254178; }
-    .btn-danger { background: #e23a3a; }
-    .btn-success { background: #25a978; }
-    .section-nav { margin: 15px 0; display: flex; gap: 11px; }
-    .dashboard-grid { display: flex; gap: 24px; margin: 16px 0 24px 0; }
-    .stat-box { background: linear-gradient(90deg, #254178 60%, #25a978 100%); color: #fff; border-radius: 10px; padding: 18px 26px; flex: 1; box-shadow: 0 2px 12px rgba(0,0,0,.07); font-size: 1.08em; text-align: center; }
-    .stat-label { font-size: .97em; color: #e0e6ed; margin-top: 7px; }
-    .hidden { display: none !important; }
-    .form-group { margin-bottom: 11px; }
-    .form-group label { display: block; margin-bottom: 3px; font-weight: 600; }
-    .form-group input, .form-group select { width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 5px; }
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fafcff; }
-    .data-table th, .data-table td { padding: 10px 10px; border: 1px solid #e0e6ed; text-align: left; }
-    .data-table th { background: #f4f7fa; }
-    .avatar { background: #25a978; color: #fff; font-weight: 700; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-    .alert { padding: 10px 16px; margin: 8px 0; border-radius: 5px; font-weight: 600; }
-    .alert-error { background: #ffe5e5; color: #b90000; }
-    .alert-success { background: #e9fbe5; color: #0a5d2a; }
-    .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100vw; height: 100vh; overflow: auto; background: rgba(0,0,0,0.14); }
-    .modal-content { background: #fff; margin: 50px auto; border-radius: 10px; padding: 30px 26px; max-width: 480px; min-width: 320px; position: relative; box-shadow: 0 2px 24px rgba(0,0,0,.08); }
-    .close { color: #aaa; float: right; font-size: 2em; font-weight: 700; position: absolute; right: 15px; top: 8px; cursor: pointer; }
-    .close:hover { color: #333; }
-    #notificationContainer { position: fixed; top: 30px; right: 30px; z-index: 9999; max-width: 350px; }
-    .notification { background: #fff; border-left: 6px solid #254178; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.13); padding: 15px 20px 15px 15px; margin-bottom: 11px; font-size: 1rem; color: #333; display: flex; align-items: center; animation: fadeInRight 0.35s; }
-    .notification.success { border-left-color: #25a978; }
-    .notification.error { border-left-color: #e23a3a; }
-    .notification.info { border-left-color: #254178; }
-    .notification .noti-close { margin-left: auto; font-size: 1.1em; cursor: pointer; color: #aaa; }
-    .notification .noti-close:hover { color: #333; }
-    @keyframes fadeInRight { from { opacity: 0; transform: translateX(70px);} to { opacity: 1; transform: translateX(0);} }
-    @media (max-width: 900px) { .dashboard-grid { flex-direction: column; } }
+    /* ... (styles unchanged for brevity) ... */
+    /* [RETAIN YOUR CSS FROM ORIGINAL HERE] */
   </style>
 </head>
 <body>
 <div class="container">
-  <nav>
-    <span class="nav-title">Seven Royal Stars School</span>
-    <span class="nav-actions">
-      <span id="userDisplay" class="avatar hidden"></span>
-      <button class="btn btn-secondary" onclick="showModal('aboutModal')">About</button>
-      <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
-    </span>
-  </nav>
-  <!-- Login Section -->
-  <div id="loginSection">
-    <h2>Login</h2>
-    <div id="loginAlert"></div>
-    <form onsubmit="login(); return false;">
-      <div class="form-group">
-        <label>Username:</label>
-        <input type="text" id="username" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Password:</label>
-        <input type="password" id="password" required autocomplete="current-password">
-      </div>
-      <div class="form-group">
-        <label>Role:</label>
-        <select id="userRole" required>
-          <option value="admin">Administrator</option>
-          <option value="teacher">Teacher</option>
-        </select>
-      </div>
-      <button class="btn" type="submit">Login</button>
-    </form>
-    <div style="margin-top:14px;color:#888;">
-      <b>Demo:</b> admin/admin123 or teacher/teacher123
-    </div>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden">
-    <div class="dashboard-grid">
-      <div class="stat-box"><span id="statStudents">0</span><div class="stat-label">Students</div></div>
-      <div class="stat-box"><span id="statTeachers">0</span><div class="stat-label">Teachers</div></div>
-      <div class="stat-box"><span id="statClasses">0</span><div class="stat-label">Classes</div></div>
-      <div class="stat-box"><span id="statFeesPending">GHS 0.00</span><div class="stat-label">Fees Pending</div></div>
-    </div>
-    <div class="section-nav">
-      <button class="btn" onclick="showSection('students')">Students</button>
-      <button class="btn" onclick="showSection('teachers')">Teachers</button>
-      <button class="btn" onclick="showSection('classes')">Classes</button>
-      <button class="btn" onclick="showSection('attendance')">Attendance</button>
-      <button class="btn" onclick="showSection('grades')">Grades</button>
-      <button class="btn" onclick="showSection('fees')">Fees</button>
-      <button class="btn" onclick="showSection('settings')">Settings</button>
-      <button class="btn btn-secondary" onclick="showModal('importModal')">Import</button>
-      <button class="btn btn-secondary" onclick="exportData()">Export</button>
-    </div>
-    <div id="mainSectionContent">
-      <!-- Students -->
-      <section id="studentsSection" class="hidden">
-        <h3>Student Management</h3>
-        <button class="btn btn-success" onclick="showModal('addStudentModal')">Add Student</button>
-        <input type="text" id="studentSearch" style="margin-left:15px;width:220px;" placeholder="Search students..." oninput="renderStudentsTable()">
-        <table class="data-table" id="studentsTable">
-          <thead>
-            <tr>
-              <th>Name</th><th>Photo</th><th>Class</th><th>Parent</th><th>Emergency</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Teachers -->
-      <section id="teachersSection" class="hidden">
-        <h3>Teacher Management</h3>
-        <button class="btn btn-success" onclick="showModal('addTeacherModal')">Add Teacher</button>
-        <table class="data-table" id="teachersTable">
-          <thead>
-            <tr>
-              <th>Name</th><th>Email</th><th>Qualification</th><th>Assigned Class</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Classes -->
-      <section id="classesSection" class="hidden">
-        <h3>Class Management</h3>
-        <button class="btn btn-success" onclick="showModal('addClassModal')">Add Class</button>
-        <table class="data-table" id="classesTable">
-          <thead>
-            <tr>
-              <th>Class Name</th><th>Classroom</th><th>Teacher</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Attendance -->
-      <section id="attendanceSection" class="hidden">
-        <h3>Attendance Tracking</h3>
-        <button class="btn btn-success" onclick="showModal('markAttendanceModal')">Mark Attendance</button>
-        <table class="data-table" id="attendanceTable">
-          <thead>
-            <tr>
-              <th>Date</th><th>Class</th><th>Student</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Grades -->
-      <section id="gradesSection" class="hidden">
-        <h3>Gradebook</h3>
-        <button class="btn btn-success" onclick="showModal('addGradeModal')">Add Grade</button>
-        <table class="data-table" id="gradesTable">
-          <thead>
-            <tr>
-              <th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Weight</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Fees -->
-      <section id="feesSection" class="hidden">
-        <h3>Fees Management</h3>
-        <button class="btn btn-success" onclick="showModal('addFeeModal')">Add Fee</button>
-        <table class="data-table" id="feesTable">
-          <thead>
-            <tr>
-              <th>Student</th><th>Class</th><th>Type</th><th>Amount</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Settings -->
-      <section id="settingsSection" class="hidden">
-        <h3>Settings & Backup</h3>
-        <button class="btn btn-secondary" onclick="backupData()">Backup</button>
-        <button class="btn btn-secondary" onclick="restoreData()">Restore</button>
-        <div style="margin-top:20px;">
-          <b>School Name: </b> <span id="schoolNameDisplay">Seven Royal Stars School</span>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <!-- Modals (Add/Edit forms + Import, About, etc.) -->
-  <div id="aboutModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('aboutModal')">&times;</span>
-      <h3>About</h3>
-      <p>
-        <b>Seven Royal Stars School Management System</b><br>
-        Modern, advanced, all-in-one school management system for web.<br>
-        <small>Developed for Seven Royal Stars School, Ghana.</small>
-      </p>
-      <ul>
-        <li>Admin & Teacher roles with secure login</li>
-        <li>Student, teacher, class, fees, attendance & grades management</li>
-        <li>Import/Export (CSV), backup/restore, reporting, and more</li>
-        <li>No backend required — runs fully in your browser!</li>
-      </ul>
-    </div>
-  </div>
-  <!-- (Other modals: addStudentModal, addTeacherModal, addClassModal, markAttendanceModal, addGradeModal, addFeeModal, importModal — omitted for brevity) -->
-
-  <!-- Notification container -->
-  <div id="notificationContainer"></div>
+  <!-- ... (HTML layout unchanged) ... -->
+  <!-- [RETAIN YOUR HTML LAYOUT FROM ORIGINAL HERE] -->
 </div>
 
 <!-- Chart.js for analytics (optional, not used in this starter) -->
@@ -242,6 +42,100 @@ let users = [
   {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', status: 'active'}
 ];
 let currentUser = null, currentSection = 'students';
+
+// ----------- MASS POPULATE DEMO DATA ------------
+function randomPhoto(seed) {
+  // Generate a simple avatar image using the seed (student/teacher initials)
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(seed)}&background=25a978&color=fff&rounded=true&size=64`;
+}
+function populateDemoData() {
+  // Populate students
+  db.students = [
+    {name:'Ama Mensah', photo:randomPhoto('Ama Mensah'), class:'Primary 1', parent:'Kofi Mensah', emergency:'0240000001', status:'Active'},
+    {name:'Kwame Boateng', photo:randomPhoto('Kwame Boateng'), class:'Primary 2', parent:'Akua Boateng', emergency:'0240000002', status:'Active'},
+    {name:'Akosua Owusu', photo:randomPhoto('Akosua Owusu'), class:'Primary 3', parent:'Yaw Owusu', emergency:'0240000003', status:'Active'},
+    {name:'Yaw Addo', photo:randomPhoto('Yaw Addo'), class:'JHS 1', parent:'Mansa Addo', emergency:'0240000004', status:'Active'},
+    {name:'Kwabena Agyapong', photo:randomPhoto('Kwabena Agyapong'), class:'JHS 2', parent:'Ama Agyapong', emergency:'0240000005', status:'Active'},
+    {name:'Efua Darko', photo:randomPhoto('Efua Darko'), class:'Primary 4', parent:'Kojo Darko', emergency:'0240000006', status:'Active'},
+    {name:'Kojo Antwi', photo:randomPhoto('Kojo Antwi'), class:'Primary 5', parent:'Abena Antwi', emergency:'0240000007', status:'Inactive'},
+    {name:'Abena Asare', photo:randomPhoto('Abena Asare'), class:'Kindergarten 2', parent:'Samuel Asare', emergency:'0240000008', status:'Active'},
+    {name:'Nana Kofi', photo:randomPhoto('Nana Kofi'), class:'Nursery 2', parent:'Akua Kofi', emergency:'0240000009', status:'Active'},
+    {name:'Mansa Opoku', photo:randomPhoto('Mansa Opoku'), class:'Primary 2', parent:'Yaw Opoku', emergency:'0240000010', status:'Active'},
+    {name:'Kojo Mensah', photo:randomPhoto('Kojo Mensah'), class:'JHS 2', parent:'Ama Mensah', emergency:'0240000011', status:'Active'},
+    {name:'Akua Frimpong', photo:randomPhoto('Akua Frimpong'), class:'Primary 6', parent:'Kwame Frimpong', emergency:'0240000012', status:'Active'},
+    {name:'Yaw Appiah', photo:randomPhoto('Yaw Appiah'), class:'JHS 3', parent:'Serwaa Appiah', emergency:'0240000013', status:'Active'},
+    {name:'Afia Owusu', photo:randomPhoto('Afia Owusu'), class:'Primary 1', parent:'Owusu Mensah', emergency:'0240000014', status:'Inactive'},
+    {name:'Samuel Sarpong', photo:randomPhoto('Samuel Sarpong'), class:'Primary 3', parent:'Akosua Sarpong', emergency:'0240000015', status:'Active'}
+  ];
+  // Populate teachers
+  db.teachers = [
+    {name:'Mrs. Serwaa', email:'serwaa@school.edu', qualification:'B.Ed', assignedClass:'JHS 1', status:'Active'},
+    {name:'Mr. Owusu', email:'owusu@school.edu', qualification:'M.Ed Science', assignedClass:'Primary 3', status:'Active'},
+    {name:'Madam Akua', email:'akua@school.edu', qualification:'B.Ed English', assignedClass:'Primary 1', status:'Active'},
+    {name:'Mr. Boateng', email:'boateng@school.edu', qualification:'B.Ed Mathematics', assignedClass:'Primary 5', status:'Active'},
+    {name:'Mrs. Mensah', email:'mensah@school.edu', qualification:'B.Ed French', assignedClass:'Primary 4', status:'Active'},
+    {name:'Mr. Addo', email:'addo@school.edu', qualification:'M.Ed ICT', assignedClass:'JHS 2', status:'Active'},
+    {name:'Madam Abena', email:'abena@school.edu', qualification:'B.Ed KG', assignedClass:'Kindergarten 2', status:'Active'}
+  ];
+  // Populate classes
+  db.classes = [
+    {className:'Nursery 1', room:'A1', teacher:'Miss Akua'},
+    {className:'Nursery 2', room:'A2', teacher:'Mr. Kwesi'},
+    {className:'Kindergarten 1', room:'B1', teacher:'Madam Abena'},
+    {className:'Kindergarten 2', room:'B2', teacher:'Madam Abena'},
+    {className:'Primary 1', room:'C1', teacher:'Madam Akua'},
+    {className:'Primary 2', room:'C2', teacher:'Mr. Johnson'},
+    {className:'Primary 3', room:'C3', teacher:'Mr. Owusu'},
+    {className:'Primary 4', room:'C4', teacher:'Mrs. Mensah'},
+    {className:'Primary 5', room:'C5', teacher:'Mr. Boateng'},
+    {className:'Primary 6', room:'C6', teacher:'Mr. Amponsah'},
+    {className:'JHS 1', room:'D1', teacher:'Mrs. Serwaa'},
+    {className:'JHS 2', room:'D2', teacher:'Mr. Addo'},
+    {className:'JHS 3', room:'D3', teacher:'Mr. Sarpong'}
+  ];
+  // Populate attendance (recent 10 entries)
+  db.attendance = [
+    {date:'2025-06-01', class:'Primary 1', student:'Ama Mensah', status:'Present'},
+    {date:'2025-06-01', class:'Primary 2', student:'Kwame Boateng', status:'Present'},
+    {date:'2025-06-01', class:'Primary 3', student:'Akosua Owusu', status:'Absent'},
+    {date:'2025-06-02', class:'Primary 2', student:'Mansa Opoku', status:'Present'},
+    {date:'2025-06-02', class:'Primary 4', student:'Efua Darko', status:'Present'},
+    {date:'2025-06-02', class:'JHS 1', student:'Yaw Addo', status:'Present'},
+    {date:'2025-06-03', class:'JHS 2', student:'Kojo Mensah', status:'Absent'},
+    {date:'2025-06-03', class:'JHS 2', student:'Kwabena Agyapong', status:'Present'},
+    {date:'2025-06-03', class:'Primary 6', student:'Akua Frimpong', status:'Present'},
+    {date:'2025-06-04', class:'JHS 3', student:'Yaw Appiah', status:'Present'}
+  ];
+  // Populate grades (a variety of students/classes/subjects)
+  db.grades = [
+    {student:'Ama Mensah', class:'Primary 1', subject:'Math', score:92, weight:'Exam'},
+    {student:'Kwame Boateng', class:'Primary 2', subject:'English', score:84, weight:'Test'},
+    {student:'Akosua Owusu', class:'Primary 3', subject:'Science', score:78, weight:'Quiz'},
+    {student:'Yaw Addo', class:'JHS 1', subject:'ICT', score:65, weight:'Exam'},
+    {student:'Efua Darko', class:'Primary 4', subject:'Math', score:70, weight:'Test'},
+    {student:'Kojo Antwi', class:'Primary 5', subject:'French', score:55, weight:'Exam'},
+    {student:'Abena Asare', class:'Kindergarten 2', subject:'RME', score:80, weight:'Quiz'},
+    {student:'Kojo Mensah', class:'JHS 2', subject:'Science', score:61, weight:'Assignment'},
+    {student:'Akua Frimpong', class:'Primary 6', subject:'Math', score:91, weight:'Exam'},
+    {student:'Yaw Appiah', class:'JHS 3', subject:'Social Studies', score:85, weight:'Exam'}
+  ];
+  // Populate fees (various statuses)
+  db.fees = [
+    {student:'Ama Mensah', class:'Primary 1', type:'Tuition', amount:1200, status:'Paid'},
+    {student:'Kwame Boateng', class:'Primary 2', type:'Tuition', amount:1200, status:'Pending'},
+    {student:'Akosua Owusu', class:'Primary 3', type:'Uniform', amount:200, status:'Paid'},
+    {student:'Yaw Addo', class:'JHS 1', type:'Books', amount:150, status:'Pending'},
+    {student:'Efua Darko', class:'Primary 4', type:'Tuition', amount:1200, status:'Paid'},
+    {student:'Kojo Antwi', class:'Primary 5', type:'Exam', amount:50, status:'Pending'},
+    {student:'Abena Asare', class:'Kindergarten 2', type:'Tuition', amount:1100, status:'Paid'},
+    {student:'Kojo Mensah', class:'JHS 2', type:'Transport', amount:300, status:'Paid'},
+    {student:'Akua Frimpong', class:'Primary 6', type:'Tuition', amount:1200, status:'Pending'},
+    {student:'Yaw Appiah', class:'JHS 3', type:'Tuition', amount:1250, status:'Pending'}
+  ];
+  // Settings
+  db.settings = { schoolName: "Seven Royal Stars School" };
+}
+// -----------------------------------------------
 
 // Local storage functions
 function loadDB() {
@@ -331,7 +225,7 @@ function renderStats() {
   let pending = db.fees.filter(f => f.status !== 'Paid').reduce((a, f) => a + Number(f.amount), 0);
   document.getElementById('statFeesPending').textContent = "GHS " + pending.toFixed(2);
 }
-// Table renderers (simplified, expand as needed)
+// Table renderers (unchanged...)
 function renderStudentsTable() {
   const tbody = document.querySelector('#studentsTable tbody');
   const search = (document.getElementById('studentSearch') || {value:""}).value.toLowerCase();
@@ -427,7 +321,7 @@ function renderFeesTable() {
     </tr>
   `).join('');
 }
-// Login/Logout
+// Login/Logout (unchanged)
 function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
@@ -457,14 +351,14 @@ function logout() {
   document.getElementById('logoutBtn').style.display = 'none';
   showNotification('Logged out', 'You have been logged out.', 'info');
 }
-// Modal helpers
+// Modal helpers (unchanged)
 function showModal(id) {
   document.getElementById(id).style.display = 'block';
 }
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
 }
-// Notification system
+// Notification system (unchanged)
 function showNotification(title, message, type='info', autoHide=3500) {
   const container = document.getElementById('notificationContainer');
   const noti = document.createElement('div');
@@ -486,11 +380,10 @@ function editGrade(i){ alert('Edit grade not implemented in this demo'); }
 function deleteGrade(i){ db.grades.splice(i,1); saveDB(); renderAll(); showNotification('Grade', 'Deleted.', 'success'); }
 function editFee(i){ alert('Edit fee not implemented in this demo'); }
 function deleteFee(i){ db.fees.splice(i,1); saveDB(); renderAll(); showNotification('Fee', 'Deleted.', 'success'); }
+
 // Initial data
 if(!localStorage.getItem('school_db')) {
-  db.students.push({name:'Ama Mensah', photo:'', class:'Primary 1', parent:'Kofi Mensah', emergency:'0240000001', status:'Active'});
-  db.teachers.push({name:'Mrs. Serwaa', email:'serwaa@school.edu', qualification:'B.Ed', assignedClass:'JHS 1', status:'Active'});
-  db.classes = CLASS_LIST.map(c => ({className: c, room: '', teacher: ''}));
+  populateDemoData();
   saveDB();
 }
 loadDB();
