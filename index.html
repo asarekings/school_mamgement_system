@@ -44,6 +44,7 @@
     @keyframes fadeInRight { from { opacity: 0; transform: translateX(70px);} to { opacity: 1; transform: translateX(0);} }
     @media (max-width: 900px) { .dashboard-grid { flex-direction: column; } }
     @media (max-width: 600px) { .container { padding: 5px; } }
+    .form-link { color: #254178; text-decoration: underline; cursor: pointer; font-size: 0.96em; }
   </style>
 </head>
 <body>
@@ -56,18 +57,26 @@
       <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
     </span>
   </nav>
-  <!-- Login Section -->
+  <!-- Login/Registration Section -->
   <div id="loginSection">
-    <h2>Login</h2>
+    <h2 id="loginTitle">Login</h2>
     <div id="loginAlert"></div>
-    <form onsubmit="login(); return false;">
+    <form id="loginForm" onsubmit="login(); return false;">
       <div class="form-group">
         <label>Username:</label>
         <input type="text" id="username" required autocomplete="username">
       </div>
+      <div class="form-group" id="regEmailGroup" style="display:none;">
+        <label>Email:</label>
+        <input type="email" id="regEmail">
+      </div>
       <div class="form-group">
         <label>Password:</label>
         <input type="password" id="password" required autocomplete="current-password">
+      </div>
+      <div class="form-group" id="regConfirmGroup" style="display:none;">
+        <label>Confirm Password:</label>
+        <input type="password" id="regConfirm">
       </div>
       <div class="form-group">
         <label>Role:</label>
@@ -76,14 +85,17 @@
           <option value="teacher">Teacher</option>
         </select>
       </div>
-      <button class="btn" type="submit">Login</button>
+      <button class="btn" type="submit" id="loginBtn">Login</button>
+      <button class="btn btn-success" type="button" id="regBtn" style="display:none;">Register</button>
     </form>
     <div style="margin-top:14px;color:#888;">
-      <b>Demo:</b> admin/admin123 or teacher/teacher123
+      <span id="toggleReg" class="form-link" onclick="toggleRegister()">Don't have an account? Register</span>
+      <span id="toggleLogin" class="form-link" onclick="toggleLogin()" style="display:none;">Already have an account? Login</span>
+      <br><b>Demo:</b> admin/admin123 or teacher/teacher123
     </div>
   </div>
 
-  <!-- Dashboard -->
+  <!-- Dashboard (unchanged) -->
   <div id="dashboard" class="hidden">
     <div class="dashboard-grid">
       <div class="stat-box"><span id="statStudents">0</span><div class="stat-label">Students</div></div>
@@ -342,14 +354,13 @@
         <small>Developed for Seven Royal Stars School, Ghana.</small>
       </p>
       <ul>
-        <li>Admin & Teacher roles with secure login</li>
+        <li>Registration and secure login for Admin & Teacher</li>
         <li>Student, teacher, class, fees, attendance & grades management</li>
         <li>Import/Export (CSV), backup/restore, reporting, and more</li>
         <li>No backend required — runs fully in your browser!</li>
       </ul>
     </div>
   </div>
-  <!-- Notification container -->
   <div id="notificationContainer"></div>
 </div>
 <script>
@@ -371,9 +382,16 @@ let db = {
 };
 // Demo users
 let users = [
-  {username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator', status: 'active'},
-  {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', status: 'active'}
+  {username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator', email: '', status: 'active'},
+  {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', email: '', status: 'active'}
 ];
+function loadUsers() {
+  const u = localStorage.getItem('school_users');
+  if (u) users = JSON.parse(u);
+}
+function saveUsers() {
+  localStorage.setItem('school_users', JSON.stringify(users));
+}
 let currentUser = null, currentSection = 'students';
 
 // ----------- MASS POPULATE DEMO DATA ------------
@@ -460,7 +478,6 @@ function populateDemoData() {
   ];
   db.settings = { schoolName: "Seven Royal Stars School" };
 }
-
 function loadDB() {
   const d = localStorage.getItem('school_db');
   if (d) db = JSON.parse(d);
@@ -470,7 +487,8 @@ function saveDB() {
 }
 function backupData() {
   saveDB();
-  const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
+  saveUsers();
+  const blob = new Blob([JSON.stringify({db, users})], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'school_backup.json'; a.click();
@@ -485,8 +503,13 @@ function restoreData() {
     const reader = new FileReader();
     reader.onload = evt => {
       try {
-        db = JSON.parse(evt.target.result);
-        saveDB(); renderAll();
+        const obj = JSON.parse(evt.target.result);
+        if(obj.db && obj.users){
+          db = obj.db; users = obj.users;
+        }else{
+          db = obj; // fallback
+        }
+        saveDB(); saveUsers(); renderAll();
         showNotification('Restore', 'Backup restored!', 'success');
       } catch {
         showNotification('Restore', 'Invalid backup.', 'error');
@@ -641,6 +664,49 @@ function renderFeesTable() {
     </tr>
   `).join('');
 }
+// Registration & Login
+let registering = false;
+function toggleRegister() {
+  registering = true;
+  document.getElementById('loginTitle').textContent = "Register";
+  document.getElementById('loginBtn').style.display = "none";
+  document.getElementById('regBtn').style.display = "";
+  document.getElementById('regEmailGroup').style.display = "";
+  document.getElementById('regConfirmGroup').style.display = "";
+  document.getElementById('toggleReg').style.display = "none";
+  document.getElementById('toggleLogin').style.display = "";
+}
+function toggleLogin() {
+  registering = false;
+  document.getElementById('loginTitle').textContent = "Login";
+  document.getElementById('loginBtn').style.display = "";
+  document.getElementById('regBtn').style.display = "none";
+  document.getElementById('regEmailGroup').style.display = "none";
+  document.getElementById('regConfirmGroup').style.display = "none";
+  document.getElementById('toggleReg').style.display = "";
+  document.getElementById('toggleLogin').style.display = "none";
+}
+document.getElementById('regBtn').onclick = function() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('regConfirm').value;
+  const email = document.getElementById('regEmail').value.trim();
+  const role = document.getElementById('userRole').value;
+  const alert = document.getElementById('loginAlert');
+  if (!username || !password || !confirm || !email) {
+    alert.innerHTML = '<div class="alert alert-error">All fields are required.</div>'; return;
+  }
+  if (password !== confirm) {
+    alert.innerHTML = '<div class="alert alert-error">Passwords do not match.</div>'; return;
+  }
+  if (users.find(u=>u.username===username)) {
+    alert.innerHTML = '<div class="alert alert-error">Username already exists.</div>'; return;
+  }
+  users.push({username, password, role, name:username, email, status:'active'});
+  saveUsers();
+  alert.innerHTML = '<div class="alert alert-success">Registration successful! You can now login.</div>';
+  toggleLogin();
+};
 function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
@@ -688,157 +754,12 @@ function showNotification(title, message, type='info', autoHide=3500) {
   container.appendChild(noti);
   setTimeout(()=>{if(noti)noti.remove();},autoHide);
 }
-function doImport() {
-  const file = document.getElementById('importFile').files[0];
-  if (!file) return showNotification('Import', 'No file selected!', 'error');
-  const reader = new FileReader();
-  reader.onload = evt => { importDataCSV(evt.target.result); closeModal('importModal'); };
-  reader.readAsText(file);
+// --- Save/load users from localStorage to persist registration ---
+function saveUsers() {
+  localStorage.setItem('school_users', JSON.stringify(users));
 }
-function editStudent(i){ alert('Edit student not implemented in this demo'); }
-function deleteStudent(i){ db.students.splice(i,1); saveDB(); renderAll(); showNotification('Student', 'Deleted.', 'success'); }
-function editTeacher(i){ alert('Edit teacher not implemented in this demo'); }
-function deleteTeacher(i){ db.teachers.splice(i,1); saveDB(); renderAll(); showNotification('Teacher', 'Deleted.', 'success'); }
-function editClass(name){ alert('Edit class not implemented in this demo'); }
-function editAttendance(i){ alert('Edit attendance not implemented in this demo'); }
-function deleteAttendance(i){ db.attendance.splice(i,1); saveDB(); renderAll(); showNotification('Attendance', 'Deleted.', 'success'); }
-function editGrade(i){ alert('Edit grade not implemented in this demo'); }
-function deleteGrade(i){ db.grades.splice(i,1); saveDB(); renderAll(); showNotification('Grade', 'Deleted.', 'success'); }
-function editFee(i){ alert('Edit fee not implemented in this demo'); }
-function deleteFee(i){ db.fees.splice(i,1); saveDB(); renderAll(); showNotification('Fee', 'Deleted.', 'success'); }
-
-// Populate modal dropdowns with current data
-function populateModalDropdowns() {
-  // Classes
-  let classOptions = CLASS_LIST.map(cls=>`<option>${cls}</option>`).join("");
-  // Students
-  let studentNames = db.students.map(s=>s.name);
-  let studentOptions = studentNames.map(n=>`<option>${n}</option>`).join("");
-  // Subjects
-  let subjectOptions = SUBJECTS.map(s=>`<option>${s}</option>`).join("");
-  // Teachers (for assignedClass)
-  let teacherClassOptions = ["<option value=''>None</option>"].concat(CLASS_LIST.map(cls=>`<option>${cls}</option>`)).join("");
-
-  // Add Student
-  document.getElementById('studentClass').innerHTML = classOptions;
-
-  // Add Teacher
-  document.getElementById('teacherAssignedClass').innerHTML = teacherClassOptions;
-
-  // Add Class
-  // none needed
-
-  // Attendance
-  document.getElementById('attendanceClass').innerHTML = classOptions;
-  document.getElementById('attendanceStudent').innerHTML = studentOptions;
-
-  // Grade
-  document.getElementById('gradeStudent').innerHTML = studentOptions;
-  document.getElementById('gradeClass').innerHTML = classOptions;
-  document.getElementById('gradeSubject').innerHTML = subjectOptions;
-
-  // Fee
-  document.getElementById('feeStudent').innerHTML = studentOptions;
-  document.getElementById('feeClass').innerHTML = classOptions;
+function loadUsers() {
+  const d = localStorage.getItem('school_users');
+  if (d) users = JSON.parse(d);
 }
-
-// --- Student Add ---
-document.getElementById('studentForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.students.push({
-    name: document.getElementById('studentName').value,
-    class: document.getElementById('studentClass').value,
-    parent: document.getElementById('studentParent').value,
-    emergency: document.getElementById('studentEmergency').value,
-    status: document.getElementById('studentStatus').value,
-    photo: ''
-  });
-  saveDB(); renderAll(); closeModal('addStudentModal');
-  showNotification('Student', 'Added!', 'success');
-  this.reset();
-};
-// --- Teacher Add ---
-document.getElementById('teacherForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.teachers.push({
-    name: document.getElementById('teacherName').value,
-    email: document.getElementById('teacherEmail').value,
-    qualification: document.getElementById('teacherQualification').value,
-    assignedClass: document.getElementById('teacherAssignedClass').value,
-    status: document.getElementById('teacherStatus').value
-  });
-  saveDB(); renderAll(); closeModal('addTeacherModal');
-  showNotification('Teacher', 'Added!', 'success');
-  this.reset();
-};
-// --- Class Add ---
-document.getElementById('classForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.classes.push({
-    className: document.getElementById('className').value,
-    room: document.getElementById('classRoom').value,
-    teacher: document.getElementById('classTeacher').value
-  });
-  saveDB(); renderAll(); closeModal('addClassModal');
-  showNotification('Class', 'Added!', 'success');
-  this.reset();
-};
-// --- Attendance Add ---
-document.getElementById('attendanceForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.attendance.push({
-    date: document.getElementById('attendanceDate').value,
-    class: document.getElementById('attendanceClass').value,
-    student: document.getElementById('attendanceStudent').value,
-    status: document.getElementById('attendanceStatus').value
-  });
-  saveDB(); renderAll(); closeModal('markAttendanceModal');
-  showNotification('Attendance', 'Added!', 'success');
-  this.reset();
-};
-// --- Grade Add ---
-document.getElementById('gradeForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.grades.push({
-    student: document.getElementById('gradeStudent').value,
-    class: document.getElementById('gradeClass').value,
-    subject: document.getElementById('gradeSubject').value,
-    score: document.getElementById('gradeScore').value,
-    weight: document.getElementById('gradeWeight').value
-  });
-  saveDB(); renderAll(); closeModal('addGradeModal');
-  showNotification('Grade', 'Added!', 'success');
-  this.reset();
-};
-// --- Fee Add ---
-document.getElementById('feeForm').onsubmit = function(e) {
-  e.preventDefault();
-  db.fees.push({
-    student: document.getElementById('feeStudent').value,
-    class: document.getElementById('feeClass').value,
-    type: document.getElementById('feeType').value,
-    amount: document.getElementById('feeAmount').value,
-    status: document.getElementById('feeStatus').value
-  });
-  saveDB(); renderAll(); closeModal('addFeeModal');
-  showNotification('Fee', 'Added!', 'success');
-  this.reset();
-};
-
-// Initial data
-if(!localStorage.getItem('school_db')) {
-  populateDemoData();
-  saveDB();
-}
-loadDB();
-window.onload = () => {
-  renderAll();
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('loginSection').classList.remove('hidden');
-  document.getElementById('userDisplay').classList.add('hidden');
-  document.getElementById('logoutBtn').style.display = 'none';
-};
-window.onbeforeunload = () => { saveDB(); };
-</script>
-</body>
-</html>
+loadUsers();
