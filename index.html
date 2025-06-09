@@ -5,8 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seven Royal Stars School Management System</title>
     <style>
-        /* ...[CSS from previous versions, unchanged for brevity]... */
-        /* Notification styles */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px rgba(0,0,0,.12);
+            padding: 30px 30px 60px 30px;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0 24px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .nav-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .nav-avatar {
+            background: #667eea;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: 700;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .btn, button {
+            background: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 18px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 2px;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #222;
+        }
+        .btn-danger {
+            background: #ff6b6b;
+        }
+        .btn-success {
+            background: #43e97b;
+        }
+        .alert {
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        .alert-error {
+            background: #ffe5e5;
+            color: #721c24;
+        }
+        .alert-success {
+            background: #e9fbe5;
+            color: #2e7d32;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .data-table th, .data-table td {
+            padding: 11px 10px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        .data-table th {
+            background: #f4f6fb;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+        .form-grid {
+            display: flex;
+            gap: 32px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            background: rgba(0,0,0,0.18);
+        }
+        .modal-content {
+            background: #fff;
+            margin: 60px auto;
+            border-radius: 10px;
+            padding: 32px 28px;
+            max-width: 520px;
+            min-width: 300px;
+            position: relative;
+            box-shadow: 0 2px 24px rgba(0,0,0,.08);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 2em;
+            font-weight: 700;
+            position: absolute;
+            right: 15px;
+            top: 8px;
+            cursor: pointer;
+        }
+        .close:hover { color: #333; }
         #notificationContainer {
             position: fixed;
             top: 25px;
@@ -41,15 +180,167 @@
             from { opacity: 0; transform: translateX(80px);}
             to { opacity: 1; transform: translateX(0);}
         }
+        .dashboard-grid {
+            display: flex;
+            gap: 22px;
+            margin: 18px 0 30px 0;
+        }
+        .stat-box {
+            background: linear-gradient(90deg, #667eea 60%, #43e97b 100%);
+            color: #fff;
+            border-radius: 10px;
+            padding: 25px 30px;
+            flex: 1;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08);
+            font-size: 1.2em;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: .98em;
+            color: #f4f6fb;
+            margin-top: 8px;
+        }
+        .section-nav {
+            margin: 20px 0 10px 0;
+            display: flex;
+            gap: 11px;
+        }
+        .section-nav .btn {
+            padding: 7px 16px;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        #mainSectionContent > section {
+            display: none;
+        }
+        #mainSectionContent > section.active {
+            display: block;
+        }
+        /* Responsive */
+        @media (max-width: 700px) {
+            .container { padding: 7px 2vw; }
+            .dashboard-grid { flex-direction: column; }
+            .form-grid { flex-direction: column; gap: 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ...[PREVIOUS HTML UNCHANGED FOR BREVITY]... -->
-        <div style="text-align:right; margin:10px 0;">
-            <button class="btn btn-secondary" onclick="showUserManagement()">👥 Manage Users</button>
-            <button class="btn btn-secondary" onclick="showAnalytics()">📊 Analytics</button>
-            <button class="btn btn-secondary" onclick="showNotificationsPanel()">🔔 Notifications</button>
+        <nav>
+            <span class="nav-title">Seven Royal Stars School Management System</span>
+            <span class="nav-user">
+                <span id="userAvatar" class="nav-avatar"></span>
+                <span>
+                    <b id="userName"></b>
+                    <span style="color:#667eea">(<span id="userRoleDisplay"></span>)</span>
+                </span>
+                <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none;">Log out</button>
+            </span>
+        </nav>
+        <div id="loginSection">
+            <h2>Login</h2>
+            <div id="loginAlert"></div>
+            <form onsubmit="login(); return false;">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label>Role:</label>
+                    <select id="userRole" required>
+                        <option value="admin">Administrator</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="parent">Parent</option>
+                    </select>
+                </div>
+                <button class="btn" type="submit">Login</button>
+            </form>
+            <div style="margin-top:16px;color:#888;">
+                <b>Demo:</b> admin/admin123 or teacher/teacher123
+            </div>
+        </div>
+        <div id="dashboard" style="display:none">
+            <div style="text-align:right; margin:10px 0;">
+                <button class="btn btn-secondary" onclick="showUserManagement()">👥 Manage Users</button>
+                <button class="btn btn-secondary" onclick="showAnalytics()">📊 Analytics</button>
+                <button class="btn btn-secondary" onclick="showNotificationsPanel()">🔔 Notifications</button>
+            </div>
+            <div class="dashboard-grid">
+                <div class="stat-box"><span id="numStudents">0</span><div class="stat-label">Students</div></div>
+                <div class="stat-box"><span id="numTeachers">0</span><div class="stat-label">Teachers</div></div>
+                <div class="stat-box"><span id="numClasses">0</span><div class="stat-label">Classes</div></div>
+                <div class="stat-box"><span id="feesPending">GHS 0.00</span><div class="stat-label">Fees Pending</div></div>
+            </div>
+            <div class="section-nav">
+                <button class="btn" onclick="showSection('students')">Students</button>
+                <button class="btn" onclick="showSection('teachers')">Teachers</button>
+                <button class="btn" onclick="showSection('fees')">Fees</button>
+            </div>
+            <div id="mainSectionContent">
+                <section id="studentsSection">
+                    <h3>Student Management</h3>
+                    <div style="margin-bottom:10px;">
+                        <button class="btn btn-success" onclick="alert('Add Student Modal not implemented in this demo')">Add Student</button>
+                        <input type="text" id="studentSearch" style="margin-left:15px;width:220px;" placeholder="Search students..." oninput="alert('Search not implemented')">
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Class</th>
+                                <th>Parent</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </section>
+                <section id="teachersSection">
+                    <h3>Teacher Management</h3>
+                    <div style="margin-bottom:10px;">
+                        <button class="btn btn-success" onclick="alert('Add Teacher Modal not implemented in this demo')">Add Teacher</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTableBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </section>
+                <section id="feesSection">
+                    <h3>Fee Management</h3>
+                    <div style="margin-bottom:10px;">
+                        <button class="btn btn-success" onclick="alert('Add Fee Modal not implemented in this demo')">Add Fee</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Class</th>
+                                <th>Fee Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feesTableBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </section>
+            </div>
         </div>
         <!-- User management modal -->
         <div id="userMgmtModal" class="modal">
@@ -138,12 +429,32 @@
     <!-- Chart.js (for analytics) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+    // ==== DATA MOCKUP ====
+    let schoolData = {
+        students: [
+            {name: "Ama Mensah", class: "JHS 1", parent: "Kwabena Mensah", status: "Active"},
+            {name: "Yaw Boateng", class: "JHS 2", parent: "Akua Boateng", status: "Active"},
+            {name: "Kofi Owusu", class: "JHS 3", parent: "Yaw Owusu", status: "Inactive"}
+        ],
+        teachers: [
+            {name: "Mrs. Serwaa", email: "serwaa@school.edu", subject: "Maths", status: "Active"},
+            {name: "Mr. Quaye", email: "quaye@school.edu", subject: "Science", status: "Active"}
+        ],
+        classes: ["JHS 1", "JHS 2", "JHS 3"],
+        fees: [
+            {name: "Ama Mensah", class: "JHS 1", feeType: "Tuition", amount: 350.00, status: "Paid"},
+            {name: "Yaw Boateng", class: "JHS 2", feeType: "Tuition", amount: 350.00, status: "Pending"},
+            {name: "Kofi Owusu", class: "JHS 3", feeType: "Tuition", amount: 350.00, status: "Overdue"}
+        ],
+        subjects: ["Maths", "Science"]
+    };
     // ==== MULTI-USER SYSTEM ====
     let users = [
         {username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator', status: 'active'},
         {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', status: 'active'}
     ];
     let currentUser = null;
+    let currentSection = 'students';
     // Try load users from storage
     function loadUsers() {
         const u = localStorage.getItem('users');
@@ -152,6 +463,142 @@
     function saveUsers() {
         localStorage.setItem('users', JSON.stringify(users));
     }
+    // ==== NOTIFICATIONS SYSTEM ====
+    let notifications = [];
+    function loadNotifications() {
+        const n = localStorage.getItem('notifications');
+        if (n) notifications = JSON.parse(n);
+    }
+    function saveNotifications() {
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+    }
+    function showNotification(title, message, type='info', autoHide=4000) {
+        const container = document.getElementById('notificationContainer');
+        const noti = document.createElement('div');
+        noti.className = `notification ${type}`;
+        noti.innerHTML = `<b>${title}</b><div style="margin-left:10px;">${message}</div>
+            <span class="noti-close" onclick="this.parentElement.remove()">×</span>`;
+        container.appendChild(noti);
+        setTimeout(()=>{if(noti)noti.remove();},autoHide);
+        // Add to notification log
+        notifications.push({title, message, type, time: new Date().toLocaleString()});
+        saveNotifications();
+    }
+    function showNotificationsPanel() {
+        document.getElementById('notificationsModal').style.display = 'block';
+        renderNotificationsList();
+    }
+    function renderNotificationsList() {
+        const ul = document.getElementById('notificationsList');
+        ul.innerHTML = notifications.slice(-20).reverse().map(n=>
+            `<li style="margin-bottom:10px;border-bottom:1px solid #eee;">
+                <b>${n.title}</b> <span style="color:#666;font-size:0.9em;">(${n.time})</span><br>
+                <span style="font-size:0.97em;">${n.message}</span>
+            </li>`
+        ).join('');
+    }
+    function clearAllNotifications() {
+        notifications = [];
+        saveNotifications();
+        renderNotificationsList();
+        showNotification('Notifications Cleared','All notifications removed.','info');
+    }
+    // ==== LOGIN ====
+    function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('userRole').value;
+        const alert = document.getElementById('loginAlert');
+        const u = users.find(u=>u.username===username && u.password===password && u.role===role);
+        if (u && u.status==='active') {
+            currentUser = {...u};
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('userName').textContent = u.name;
+            document.getElementById('userRoleDisplay').textContent = u.role.charAt(0).toUpperCase()+u.role.slice(1);
+            document.getElementById('userAvatar').textContent = u.name.charAt(0);
+            document.getElementById('logoutBtn').style.display = '';
+            setupDashboard();
+            alert.innerHTML = '';
+            showNotification('Welcome',`Hello ${u.name}!`,'success');
+        } else {
+            alert.innerHTML = '<div class="alert alert-error">Invalid credentials or user inactive.</div>';
+        }
+    }
+    function logout() {
+        currentUser = null;
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('userName').textContent = '';
+        document.getElementById('userRoleDisplay').textContent = '';
+        document.getElementById('userAvatar').textContent = '';
+        document.getElementById('logoutBtn').style.display = 'none';
+        showNotification('Logged out','You have been logged out.','info');
+    }
+    // ==== DASHBOARD & MAIN SECTIONS ====
+    function setupDashboard() {
+        updateStats();
+        showSection(currentSection);
+    }
+    function showSection(section) {
+        currentSection = section;
+        // Hide all
+        document.querySelectorAll('#mainSectionContent > section').forEach(sec => sec.classList.remove('active'));
+        // Show selected
+        const sec = document.getElementById(section+'Section');
+        if (sec) sec.classList.add('active');
+        if(section==='students') loadStudentsTable();
+        if(section==='teachers') loadTeachersTable();
+        if(section==='fees') loadFeesTable();
+    }
+    function loadStudentsTable() {
+        let html = '';
+        for(const s of schoolData.students) {
+            html += `<tr>
+                <td>${s.name}</td>
+                <td>${s.class}</td>
+                <td>${s.parent}</td>
+                <td>${s.status}</td>
+            </tr>`;
+        }
+        document.getElementById('studentsTableBody').innerHTML = html;
+    }
+    function loadTeachersTable() {
+        let html = '';
+        for(const t of schoolData.teachers) {
+            html += `<tr>
+                <td>${t.name}</td>
+                <td>${t.email}</td>
+                <td>${t.subject}</td>
+                <td>${t.status}</td>
+            </tr>`;
+        }
+        document.getElementById('teachersTableBody').innerHTML = html;
+    }
+    function loadFeesTable() {
+        let html = '';
+        for(const f of schoolData.fees) {
+            html += `<tr>
+                <td>${f.name}</td>
+                <td>${f.class}</td>
+                <td>${f.feeType}</td>
+                <td>GHS ${Number(f.amount).toFixed(2)}</td>
+                <td>${f.status}</td>
+            </tr>`;
+        }
+        document.getElementById('feesTableBody').innerHTML = html;
+    }
+    function updateStats() {
+        document.getElementById('numStudents').textContent = schoolData.students.length;
+        document.getElementById('numTeachers').textContent = schoolData.teachers.length;
+        document.getElementById('numClasses').textContent = schoolData.classes.length;
+        let pending = 0;
+        for(const f of schoolData.fees) {
+            if(f.status !== 'Paid') pending += Number(f.amount);
+        }
+        document.getElementById('feesPending').textContent = 'GHS ' + pending.toFixed(2);
+    }
+    // ==== USER MANAGEMENT ====
     function showUserManagement() {
         if (!currentUser || currentUser.role !== 'admin') return showNotification('Unauthorized','Only admins can manage users','error');
         document.getElementById('userMgmtModal').style.display = 'block';
@@ -226,31 +673,6 @@
             showNotification('User deleted','User removed','success');
         }
     }
-    // ==== END MULTI-USER ====
-
-    // ==== LOGIN (with user status check) ====
-    function login() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        const role = document.getElementById('userRole').value;
-        const alert = document.getElementById('loginAlert');
-        const u = users.find(u=>u.username===username && u.password===password && u.role===role);
-        if (u && u.status==='active') {
-            currentUser = {...u};
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('userName').textContent = u.name;
-            document.getElementById('userRoleDisplay').textContent = u.role.charAt(0).toUpperCase()+u.role.slice(1);
-            document.getElementById('userAvatar').textContent = u.name.charAt(0);
-            setupDashboard();
-            alert.innerHTML = '';
-            showNotification('Welcome',`Hello ${u.name}!`,'success');
-        } else {
-            alert.innerHTML = '<div class="alert alert-error">Invalid credentials or user inactive.</div>';
-        }
-    }
-    // ... [logout/other unchanged] ...
-
     // ==== ANALYTICS ====
     let analyticsChart = null;
     function showAnalytics() {
@@ -260,7 +682,6 @@
     }
     function renderAnalyticsChart() {
         const ctx = document.getElementById('analyticsChart').getContext('2d');
-        // Example: student enrollment, teacher count, fee collection
         const stuCount = schoolData.students.length;
         const tchCount = schoolData.teachers.length;
         const feesPaid = schoolData.fees.filter(f=>f.status==='Paid').reduce((s,f)=>s+parseFloat(f.amount||0),0);
@@ -301,72 +722,25 @@
             </ul>
         `;
     }
-    // ==== END ANALYTICS ====
-
-    // ==== NOTIFICATIONS SYSTEM ====
-    let notifications = [];
-    function loadNotifications() {
-        const n = localStorage.getItem('notifications');
-        if (n) notifications = JSON.parse(n);
+    // ==== MODALS ====
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
     }
-    function saveNotifications() {
-        localStorage.setItem('notifications', JSON.stringify(notifications));
-    }
-    function showNotification(title, message, type='info', autoHide=4000) {
-        const container = document.getElementById('notificationContainer');
-        const noti = document.createElement('div');
-        noti.className = `notification ${type}`;
-        noti.innerHTML = `<b>${title}</b><div style="margin-left:10px;">${message}</div>
-            <span class="noti-close" onclick="this.parentElement.remove()">×</span>`;
-        container.appendChild(noti);
-        setTimeout(()=>{if(noti)noti.remove();},autoHide);
-        // Add to notification log
-        notifications.push({title, message, type, time: new Date().toLocaleString()});
-        saveNotifications();
-    }
-    function showNotificationsPanel() {
-        document.getElementById('notificationsModal').style.display = 'block';
-        renderNotificationsList();
-    }
-    function renderNotificationsList() {
-        const ul = document.getElementById('notificationsList');
-        ul.innerHTML = notifications.slice(-20).reverse().map(n=>
-            `<li style="margin-bottom:10px;border-bottom:1px solid #eee;">
-                <b>${n.title}</b> <span style="color:#666;font-size:0.9em;">(${n.time})</span><br>
-                <span style="font-size:0.97em;">${n.message}</span>
-            </li>`
-        ).join('');
-    }
-    function clearAllNotifications() {
-        notifications = [];
-        saveNotifications();
-        renderNotificationsList();
-        showNotification('Notifications Cleared','All notifications removed.','info');
-    }
-    // ==== END NOTIFICATIONS ====
-
-    // ==== ENHANCED EVENTS ====
-    // Example: notify on new student, teacher or fee added
-    function onDataChange() {
-        saveData();
-        updateStats();
-        if (currentSection === 'students') showNotification('Student Updated','Student list updated.','success',3000);
-        else if (currentSection === 'teachers') showNotification('Teacher Updated','Teacher list updated.','success',3000);
-        else if (currentSection === 'fees') showNotification('Fee Records','Fee records updated.','info',3000);
-    }
-    // For demo, also notify on login
-    // ...[rest of app logic unchanged, insert onDataChange calls after each data update]...
-
-    // ==== LOAD ON PAGE INIT ====
+    // ==== INIT ====
     window.onload = () => {
         loadUsers();
         loadNotifications();
-        loadData();
+        // No data persistence for mockup
         hideAllSections();
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('loginSection').style.display = 'block';
     };
-    window.onbeforeunload = () => { saveData(); saveUsers(); saveNotifications(); };
+    function hideAllSections() {
+        document.getElementById('studentsSection').classList.remove('active');
+        document.getElementById('teachersSection').classList.remove('active');
+        document.getElementById('feesSection').classList.remove('active');
+    }
+    window.onbeforeunload = () => { saveUsers(); saveNotifications(); };
     </script>
 </body>
 </html>
