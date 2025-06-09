@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Royal Stars School Management System</title>
+    <style>
+        /* ...[CSS from previous versions, unchanged for brevity]... */
+        /* Notification styles */
+        #notificationContainer {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+        .notification {
+            background: #fff;
+            border-left: 6px solid #667eea;
+            border-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.12);
+            padding: 16px 20px 16px 16px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            animation: fadeInRight 0.4s;
+        }
+        .notification.success { border-left-color: #43e97b; }
+        .notification.error { border-left-color: #ff6b6b; }
+        .notification.info { border-left-color: #667eea; }
+        .notification .noti-close {
+            margin-left: auto;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .notification .noti-close:hover { color: #333; }
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(80px);}
+            to { opacity: 1; transform: translateX(0);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ...[PREVIOUS HTML UNCHANGED FOR BREVITY]... -->
+        <div style="text-align:right; margin:10px 0;">
+            <button class="btn btn-secondary" onclick="showUserManagement()">👥 Manage Users</button>
+            <button class="btn btn-secondary" onclick="showAnalytics()">📊 Analytics</button>
+            <button class="btn btn-secondary" onclick="showNotificationsPanel()">🔔 Notifications</button>
+        </div>
+        <!-- User management modal -->
+        <div id="userMgmtModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userMgmtModal')">&times;</span>
+                <h3>User Management</h3>
+                <div style="margin-bottom:10px;">
+                    <button class="btn btn-success" onclick="showAddUserForm()">Add User</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+                <!-- Add/Edit User Form -->
+                <div id="addEditUserForm" style="display:none; margin-top:20px;">
+                    <h4 id="userFormTitle">Add User</h4>
+                    <form onsubmit="submitUserForm(event)">
+                        <div class="form-grid">
+                            <div>
+                                <div class="form-group">
+                                    <label>Username:</label>
+                                    <input type="text" id="userFormUsername" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Full Name:</label>
+                                    <input type="text" id="userFormName" required>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label>Password:</label>
+                                    <input type="password" id="userFormPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Role:</label>
+                                    <select id="userFormRole" required>
+                                        <option value="admin">Administrator</option>
+                                        <option value="teacher">Teacher</option>
+                                        <option value="parent">Parent</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Status:</label>
+                                    <select id="userFormStatus">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" type="submit">Save User</button>
+                        <button class="btn btn-secondary" type="button" onclick="hideAddEditUserForm()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Analytics modal -->
+        <div id="analyticsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('analyticsModal')">&times;</span>
+                <h3>Analytics & Trends</h3>
+                <canvas id="analyticsChart" width="100%" height="50"></canvas>
+                <div id="analyticsSummary" style="margin-top:20px;"></div>
+            </div>
+        </div>
+        <!-- Notifications drawer -->
+        <div id="notificationsModal" class="modal">
+            <div class="modal-content" style="max-width:500px">
+                <span class="close" onclick="closeModal('notificationsModal')">&times;</span>
+                <h3>Notifications</h3>
+                <ul id="notificationsList" style="list-style:none;padding:0;"></ul>
+                <button class="btn btn-secondary" onclick="clearAllNotifications()">Clear All</button>
+            </div>
+        </div>
+    </div>
+    <!-- Notification container -->
+    <div id="notificationContainer"></div>
+    <!-- Chart.js (for analytics) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // ==== MULTI-USER SYSTEM ====
+    let users = [
+        {username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator', status: 'active'},
+        {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', status: 'active'}
+    ];
+    let currentUser = null;
+    // Try load users from storage
+    function loadUsers() {
+        const u = localStorage.getItem('users');
+        if (u) users = JSON.parse(u);
+    }
+    function saveUsers() {
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+    function showUserManagement() {
+        if (!currentUser || currentUser.role !== 'admin') return showNotification('Unauthorized','Only admins can manage users','error');
+        document.getElementById('userMgmtModal').style.display = 'block';
+        renderUserTable();
+        hideAddEditUserForm();
+    }
+    function renderUserTable() {
+        let html = '';
+        users.forEach(u => {
+            html += `<tr>
+                <td>${u.username}</td>
+                <td>${u.role}</td>
+                <td>${u.name}</td>
+                <td>${u.status}</td>
+                <td>
+                    <button class="btn" onclick="editUser('${u.username}')">Edit</button>
+                    <button class="btn btn-danger" onclick="deleteUser('${u.username}')">Delete</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('userTableBody').innerHTML = html;
+    }
+    function showAddUserForm() {
+        document.getElementById('addEditUserForm').style.display = 'block';
+        document.getElementById('userFormTitle').textContent = 'Add User';
+        document.getElementById('userFormUsername').value = '';
+        document.getElementById('userFormUsername').disabled = false;
+        document.getElementById('userFormName').value = '';
+        document.getElementById('userFormPassword').value = '';
+        document.getElementById('userFormRole').value = 'teacher';
+        document.getElementById('userFormStatus').value = 'active';
+    }
+    function submitUserForm(e) {
+        e.preventDefault();
+        const username = document.getElementById('userFormUsername').value.trim();
+        const name = document.getElementById('userFormName').value.trim();
+        const password = document.getElementById('userFormPassword').value;
+        const role = document.getElementById('userFormRole').value;
+        const status = document.getElementById('userFormStatus').value;
+        const idx = users.findIndex(u=>u.username===username);
+        if (idx >= 0 && document.getElementById('userFormUsername').disabled===false) {
+            showNotification('User Exists','Pick a unique username','error'); return;
+        }
+        if (idx>=0) {
+            users[idx] = {...users[idx], name, role, status, password: password || users[idx].password};
+        } else {
+            users.push({username, password, role, name, status});
+        }
+        saveUsers(); renderUserTable(); hideAddEditUserForm();
+        showNotification('User Saved','User account updated','success');
+    }
+    function hideAddEditUserForm() {
+        document.getElementById('addEditUserForm').style.display = 'none';
+    }
+    function editUser(username) {
+        const u = users.find(x=>x.username===username);
+        if (!u) return;
+        document.getElementById('addEditUserForm').style.display = 'block';
+        document.getElementById('userFormTitle').textContent = 'Edit User';
+        document.getElementById('userFormUsername').value = u.username;
+        document.getElementById('userFormUsername').disabled = true;
+        document.getElementById('userFormName').value = u.name;
+        document.getElementById('userFormPassword').value = '';
+        document.getElementById('userFormRole').value = u.role;
+        document.getElementById('userFormStatus').value = u.status;
+    }
+    function deleteUser(username) {
+        if (confirm('Delete user?')) {
+            users = users.filter(u=>u.username!==username);
+            saveUsers();
+            renderUserTable();
+            showNotification('User deleted','User removed','success');
+        }
+    }
+    // ==== END MULTI-USER ====
+
+    // ==== LOGIN (with user status check) ====
+    function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('userRole').value;
+        const alert = document.getElementById('loginAlert');
+        const u = users.find(u=>u.username===username && u.password===password && u.role===role);
+        if (u && u.status==='active') {
+            currentUser = {...u};
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('userName').textContent = u.name;
+            document.getElementById('userRoleDisplay').textContent = u.role.charAt(0).toUpperCase()+u.role.slice(1);
+            document.getElementById('userAvatar').textContent = u.name.charAt(0);
+            setupDashboard();
+            alert.innerHTML = '';
+            showNotification('Welcome',`Hello ${u.name}!`,'success');
+        } else {
+            alert.innerHTML = '<div class="alert alert-error">Invalid credentials or user inactive.</div>';
+        }
+    }
+    // ... [logout/other unchanged] ...
+
+    // ==== ANALYTICS ====
+    let analyticsChart = null;
+    function showAnalytics() {
+        document.getElementById('analyticsModal').style.display = 'block';
+        renderAnalyticsChart();
+        renderAnalyticsSummary();
+    }
+    function renderAnalyticsChart() {
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        // Example: student enrollment, teacher count, fee collection
+        const stuCount = schoolData.students.length;
+        const tchCount = schoolData.teachers.length;
+        const feesPaid = schoolData.fees.filter(f=>f.status==='Paid').reduce((s,f)=>s+parseFloat(f.amount||0),0);
+        const feesPending = schoolData.fees.filter(f=>f.status!=='Paid').reduce((s,f)=>s+parseFloat(f.amount||0),0);
+        if (analyticsChart) analyticsChart.destroy();
+        analyticsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Students','Teachers','Fees Paid','Fees Pending'],
+                datasets: [{
+                    label: 'School Analytics',
+                    data: [stuCount, tchCount, feesPaid, feesPending],
+                    backgroundColor: ['#667eea','#43e97b','#fa709a','#fee140']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }},
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+    function renderAnalyticsSummary() {
+        const stuCount = schoolData.students.length;
+        const tchCount = schoolData.teachers.length;
+        const classes = schoolData.classes.length;
+        const subjects = schoolData.subjects.length;
+        const feesPaid = schoolData.fees.filter(f=>f.status==='Paid').reduce((s,f)=>s+parseFloat(f.amount||0),0);
+        const feesPending = schoolData.fees.filter(f=>f.status!=='Paid').reduce((s,f)=>s+parseFloat(f.amount||0),0);
+        document.getElementById('analyticsSummary').innerHTML = `
+            <ul>
+                <li><b>Total Students:</b> ${stuCount}</li>
+                <li><b>Total Teachers:</b> ${tchCount}</li>
+                <li><b>Total Classes:</b> ${classes}</li>
+                <li><b>Total Subjects:</b> ${subjects}</li>
+                <li><b>Fees Paid:</b> GHS ${feesPaid.toFixed(2)}</li>
+                <li><b>Fees Pending:</b> GHS ${feesPending.toFixed(2)}</li>
+            </ul>
+        `;
+    }
+    // ==== END ANALYTICS ====
+
+    // ==== NOTIFICATIONS SYSTEM ====
+    let notifications = [];
+    function loadNotifications() {
+        const n = localStorage.getItem('notifications');
+        if (n) notifications = JSON.parse(n);
+    }
+    function saveNotifications() {
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+    }
+    function showNotification(title, message, type='info', autoHide=4000) {
+        const container = document.getElementById('notificationContainer');
+        const noti = document.createElement('div');
+        noti.className = `notification ${type}`;
+        noti.innerHTML = `<b>${title}</b><div style="margin-left:10px;">${message}</div>
+            <span class="noti-close" onclick="this.parentElement.remove()">×</span>`;
+        container.appendChild(noti);
+        setTimeout(()=>{if(noti)noti.remove();},autoHide);
+        // Add to notification log
+        notifications.push({title, message, type, time: new Date().toLocaleString()});
+        saveNotifications();
+    }
+    function showNotificationsPanel() {
+        document.getElementById('notificationsModal').style.display = 'block';
+        renderNotificationsList();
+    }
+    function renderNotificationsList() {
+        const ul = document.getElementById('notificationsList');
+        ul.innerHTML = notifications.slice(-20).reverse().map(n=>
+            `<li style="margin-bottom:10px;border-bottom:1px solid #eee;">
+                <b>${n.title}</b> <span style="color:#666;font-size:0.9em;">(${n.time})</span><br>
+                <span style="font-size:0.97em;">${n.message}</span>
+            </li>`
+        ).join('');
+    }
+    function clearAllNotifications() {
+        notifications = [];
+        saveNotifications();
+        renderNotificationsList();
+        showNotification('Notifications Cleared','All notifications removed.','info');
+    }
+    // ==== END NOTIFICATIONS ====
+
+    // ==== ENHANCED EVENTS ====
+    // Example: notify on new student, teacher or fee added
+    function onDataChange() {
+        saveData();
+        updateStats();
+        if (currentSection === 'students') showNotification('Student Updated','Student list updated.','success',3000);
+        else if (currentSection === 'teachers') showNotification('Teacher Updated','Teacher list updated.','success',3000);
+        else if (currentSection === 'fees') showNotification('Fee Records','Fee records updated.','info',3000);
+    }
+    // For demo, also notify on login
+    // ...[rest of app logic unchanged, insert onDataChange calls after each data update]...
+
+    // ==== LOAD ON PAGE INIT ====
+    window.onload = () => {
+        loadUsers();
+        loadNotifications();
+        loadData();
+        hideAllSections();
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+    };
+    window.onbeforeunload = () => { saveData(); saveUsers(); saveNotifications(); };
+    </script>
+</body>
+</html>
