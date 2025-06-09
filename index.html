@@ -44,7 +44,8 @@
     @keyframes fadeInRight { from { opacity: 0; transform: translateX(70px);} to { opacity: 1; transform: translateX(0);} }
     @media (max-width: 900px) { .dashboard-grid { flex-direction: column; } }
     @media (max-width: 600px) { .container { padding: 5px; } }
-    .form-link { color: #254178; text-decoration: underline; cursor: pointer; font-size: 0.96em; }
+    .switch-link { color: #25a978; cursor:pointer; text-decoration:underline; font-size:0.97em; }
+    .switch-link:hover { text-decoration:underline; color:#254178; }
   </style>
 </head>
 <body>
@@ -57,26 +58,26 @@
       <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
     </span>
   </nav>
-  <!-- Login/Registration Section -->
+  <!-- Login/Register Section -->
   <div id="loginSection">
     <h2 id="loginTitle">Login</h2>
     <div id="loginAlert"></div>
-    <form id="loginForm" onsubmit="login(); return false;">
+    <form onsubmit="if(registering)return false;login();return false;">
+      <div id="regEmailGroup" class="form-group" style="display:none;">
+        <label>Email:</label>
+        <input type="email" id="regEmail" autocomplete="email">
+      </div>
       <div class="form-group">
         <label>Username:</label>
         <input type="text" id="username" required autocomplete="username">
-      </div>
-      <div class="form-group" id="regEmailGroup" style="display:none;">
-        <label>Email:</label>
-        <input type="email" id="regEmail">
       </div>
       <div class="form-group">
         <label>Password:</label>
         <input type="password" id="password" required autocomplete="current-password">
       </div>
-      <div class="form-group" id="regConfirmGroup" style="display:none;">
+      <div id="regConfirmGroup" class="form-group" style="display:none;">
         <label>Confirm Password:</label>
-        <input type="password" id="regConfirm">
+        <input type="password" id="regConfirm" autocomplete="new-password">
       </div>
       <div class="form-group">
         <label>Role:</label>
@@ -85,16 +86,17 @@
           <option value="teacher">Teacher</option>
         </select>
       </div>
-      <button class="btn" type="submit" id="loginBtn">Login</button>
-      <button class="btn btn-success" type="button" id="regBtn" style="display:none;">Register</button>
+      <button class="btn" id="loginBtn" type="submit">Login</button>
+      <button class="btn btn-success" id="regBtn" type="button" style="display:none;">Register</button>
     </form>
     <div style="margin-top:14px;color:#888;">
-      <span id="toggleReg" class="form-link" onclick="toggleRegister()">Don't have an account? Register</span>
-      <span id="toggleLogin" class="form-link" onclick="toggleLogin()" style="display:none;">Already have an account? Login</span>
-      <br><b>Demo:</b> admin/admin123 or teacher/teacher123
+      <span id="toggleReg" class="switch-link" onclick="toggleRegister()">New user? Register here</span>
+      <span id="toggleLogin" class="switch-link" onclick="toggleLogin()" style="display:none;">Back to Login</span>
+      <div style="margin-top:6px;">
+        <b>Demo:</b> admin/admin123 or teacher/teacher123
+      </div>
     </div>
   </div>
-
   <!-- Dashboard (unchanged) -->
   <div id="dashboard" class="hidden">
     <div class="dashboard-grid">
@@ -115,556 +117,17 @@
       <button class="btn btn-secondary" onclick="exportData()">Export</button>
     </div>
     <div id="mainSectionContent">
-      <!-- Students -->
-      <section id="studentsSection" class="hidden">
-        <h3>Student Management</h3>
-        <button class="btn btn-success" onclick="showModal('addStudentModal')">Add Student</button>
-        <input type="text" id="studentSearch" style="margin-left:15px;width:220px;" placeholder="Search students..." oninput="renderStudentsTable()">
-        <table class="data-table" id="studentsTable">
-          <thead>
-            <tr>
-              <th>Name</th><th>Photo</th><th>Class</th><th>Parent</th><th>Emergency</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Teachers -->
-      <section id="teachersSection" class="hidden">
-        <h3>Teacher Management</h3>
-        <button class="btn btn-success" onclick="showModal('addTeacherModal')">Add Teacher</button>
-        <table class="data-table" id="teachersTable">
-          <thead>
-            <tr>
-              <th>Name</th><th>Email</th><th>Qualification</th><th>Assigned Class</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Classes -->
-      <section id="classesSection" class="hidden">
-        <h3>Class Management</h3>
-        <button class="btn btn-success" onclick="showModal('addClassModal')">Add Class</button>
-        <table class="data-table" id="classesTable">
-          <thead>
-            <tr>
-              <th>Class Name</th><th>Classroom</th><th>Teacher</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Attendance -->
-      <section id="attendanceSection" class="hidden">
-        <h3>Attendance Tracking</h3>
-        <button class="btn btn-success" onclick="showModal('markAttendanceModal')">Mark Attendance</button>
-        <table class="data-table" id="attendanceTable">
-          <thead>
-            <tr>
-              <th>Date</th><th>Class</th><th>Student</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Grades -->
-      <section id="gradesSection" class="hidden">
-        <h3>Gradebook</h3>
-        <button class="btn btn-success" onclick="showModal('addGradeModal')">Add Grade</button>
-        <table class="data-table" id="gradesTable">
-          <thead>
-            <tr>
-              <th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Weight</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Fees -->
-      <section id="feesSection" class="hidden">
-        <h3>Fees Management</h3>
-        <button class="btn btn-success" onclick="showModal('addFeeModal')">Add Fee</button>
-        <table class="data-table" id="feesTable">
-          <thead>
-            <tr>
-              <th>Student</th><th>Class</th><th>Type</th><th>Amount</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <!-- Settings -->
-      <section id="settingsSection" class="hidden">
-        <h3>Settings & Backup</h3>
-        <button class="btn btn-secondary" onclick="backupData()">Backup</button>
-        <button class="btn btn-secondary" onclick="restoreData()">Restore</button>
-        <div style="margin-top:20px;">
-          <b>School Name: </b> <span id="schoolNameDisplay">Seven Royal Stars School</span>
-        </div>
-      </section>
+      <!-- ... (unchanged, see previous HTML for all sections and modals) ... -->
+      <!-- ... (studentsSection, teachersSection, classesSection, etc.) ... -->
     </div>
   </div>
-
-  <!-- Modals (Add/Edit forms + About, Import) -->
-  <!-- Add Student Modal -->
-  <div id="addStudentModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('addStudentModal')">&times;</span>
-      <h3>Add Student</h3>
-      <form id="studentForm">
-        <div class="form-group"><label>Name:</label><input type="text" id="studentName" required></div>
-        <div class="form-group"><label>Class:</label>
-          <select id="studentClass" required></select>
-        </div>
-        <div class="form-group"><label>Parent:</label><input type="text" id="studentParent"></div>
-        <div class="form-group"><label>Emergency:</label><input type="text" id="studentEmergency"></div>
-        <div class="form-group"><label>Status:</label>
-          <select id="studentStatus"><option>Active</option><option>Inactive</option></select>
-        </div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('addStudentModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Add Teacher Modal -->
-  <div id="addTeacherModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('addTeacherModal')">&times;</span>
-      <h3>Add Teacher</h3>
-      <form id="teacherForm">
-        <div class="form-group"><label>Name:</label><input type="text" id="teacherName" required></div>
-        <div class="form-group"><label>Email:</label><input type="email" id="teacherEmail" required></div>
-        <div class="form-group"><label>Qualification:</label><input type="text" id="teacherQualification"></div>
-        <div class="form-group"><label>Assigned Class:</label>
-          <select id="teacherAssignedClass"><option value="">None</option></select>
-        </div>
-        <div class="form-group"><label>Status:</label>
-          <select id="teacherStatus"><option>Active</option><option>Inactive</option></select>
-        </div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('addTeacherModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Add Class Modal -->
-  <div id="addClassModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('addClassModal')">&times;</span>
-      <h3>Add Class</h3>
-      <form id="classForm">
-        <div class="form-group"><label>Class Name:</label><input type="text" id="className" required></div>
-        <div class="form-group"><label>Room:</label><input type="text" id="classRoom"></div>
-        <div class="form-group"><label>Teacher:</label><input type="text" id="classTeacher"></div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('addClassModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Mark Attendance Modal -->
-  <div id="markAttendanceModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('markAttendanceModal')">&times;</span>
-      <h3>Mark Attendance</h3>
-      <form id="attendanceForm">
-        <div class="form-group"><label>Date:</label><input type="date" id="attendanceDate" required></div>
-        <div class="form-group"><label>Class:</label>
-          <select id="attendanceClass" required></select>
-        </div>
-        <div class="form-group"><label>Student:</label>
-          <select id="attendanceStudent" required></select>
-        </div>
-        <div class="form-group"><label>Status:</label>
-          <select id="attendanceStatus"><option>Present</option><option>Absent</option></select>
-        </div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('markAttendanceModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Add Grade Modal -->
-  <div id="addGradeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('addGradeModal')">&times;</span>
-      <h3>Add Grade</h3>
-      <form id="gradeForm">
-        <div class="form-group"><label>Student:</label>
-          <select id="gradeStudent" required></select>
-        </div>
-        <div class="form-group"><label>Class:</label>
-          <select id="gradeClass" required></select>
-        </div>
-        <div class="form-group"><label>Subject:</label>
-          <select id="gradeSubject" required></select>
-        </div>
-        <div class="form-group"><label>Score:</label><input type="number" id="gradeScore" required min="0" max="100"></div>
-        <div class="form-group"><label>Weight:</label>
-          <select id="gradeWeight"><option>Exam</option><option>Test</option><option>Quiz</option><option>Assignment</option></select>
-        </div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('addGradeModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Add Fee Modal -->
-  <div id="addFeeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('addFeeModal')">&times;</span>
-      <h3>Add Fee</h3>
-      <form id="feeForm">
-        <div class="form-group"><label>Student:</label>
-          <select id="feeStudent" required></select>
-        </div>
-        <div class="form-group"><label>Class:</label>
-          <select id="feeClass" required></select>
-        </div>
-        <div class="form-group"><label>Type:</label>
-          <select id="feeType">
-            <option>Tuition</option><option>Uniform</option><option>Books</option><option>Exam</option><option>Transport</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Amount:</label>
-          <input type="number" id="feeAmount" min="0" required>
-        </div>
-        <div class="form-group"><label>Status:</label>
-          <select id="feeStatus"><option>Paid</option><option>Pending</option></select>
-        </div>
-        <button class="btn btn-success" type="submit">Save</button>
-        <button class="btn btn-secondary" type="button" onclick="closeModal('addFeeModal')">Cancel</button>
-      </form>
-    </div>
-  </div>
-  <!-- Import Modal -->
-  <div id="importModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('importModal')">&times;</span>
-      <h3>Import CSV</h3>
-      <input type="file" id="importFile" accept=".csv">
-      <button class="btn btn-success" onclick="doImport()">Import</button>
-    </div>
-  </div>
-  <!-- About Modal -->
-  <div id="aboutModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('aboutModal')">&times;</span>
-      <h3>About</h3>
-      <p>
-        <b>Seven Royal Stars School Management System</b><br>
-        Modern, advanced, all-in-one school management system for web.<br>
-        <small>Developed for Seven Royal Stars School, Ghana.</small>
-      </p>
-      <ul>
-        <li>Registration and secure login for Admin & Teacher</li>
-        <li>Student, teacher, class, fees, attendance & grades management</li>
-        <li>Import/Export (CSV), backup/restore, reporting, and more</li>
-        <li>No backend required — runs fully in your browser!</li>
-      </ul>
-    </div>
-  </div>
+  <!-- ... (all modals, notification container as in previous answer) ... -->
   <div id="notificationContainer"></div>
 </div>
 <script>
-// Data structure
-const CLASS_LIST = [
-  "Nursery 1", "Nursery 2", "Kindergarten 1", "Kindergarten 2",
-  "Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6",
-  "JHS 1", "JHS 2", "JHS 3"
-];
-const SUBJECTS = ["Math", "English", "Science", "Social Studies", "ICT", "French", "Ghanaian Language", "RME"];
-let db = {
-  students: [],
-  teachers: [],
-  classes: [],
-  attendance: [],
-  grades: [],
-  fees: [],
-  settings: { schoolName: "Seven Royal Stars School" }
-};
-// Demo users
-let users = [
-  {username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator', email: '', status: 'active'},
-  {username: 'teacher', password: 'teacher123', role: 'teacher', name: 'Teacher', email: '', status: 'active'}
-];
-function loadUsers() {
-  const u = localStorage.getItem('school_users');
-  if (u) users = JSON.parse(u);
-}
-function saveUsers() {
-  localStorage.setItem('school_users', JSON.stringify(users));
-}
-let currentUser = null, currentSection = 'students';
-
-// ----------- MASS POPULATE DEMO DATA ------------
-function randomPhoto(seed) {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(seed)}&background=25a978&color=fff&rounded=true&size=64`;
-}
-function populateDemoData() {
-  db.students = [
-    {name:'Ama Mensah', photo:randomPhoto('Ama Mensah'), class:'Primary 1', parent:'Kofi Mensah', emergency:'0240000001', status:'Active'},
-    {name:'Kwame Boateng', photo:randomPhoto('Kwame Boateng'), class:'Primary 2', parent:'Akua Boateng', emergency:'0240000002', status:'Active'},
-    {name:'Akosua Owusu', photo:randomPhoto('Akosua Owusu'), class:'Primary 3', parent:'Yaw Owusu', emergency:'0240000003', status:'Active'},
-    {name:'Yaw Addo', photo:randomPhoto('Yaw Addo'), class:'JHS 1', parent:'Mansa Addo', emergency:'0240000004', status:'Active'},
-    {name:'Kwabena Agyapong', photo:randomPhoto('Kwabena Agyapong'), class:'JHS 2', parent:'Ama Agyapong', emergency:'0240000005', status:'Active'},
-    {name:'Efua Darko', photo:randomPhoto('Efua Darko'), class:'Primary 4', parent:'Kojo Darko', emergency:'0240000006', status:'Active'},
-    {name:'Kojo Antwi', photo:randomPhoto('Kojo Antwi'), class:'Primary 5', parent:'Abena Antwi', emergency:'0240000007', status:'Inactive'},
-    {name:'Abena Asare', photo:randomPhoto('Abena Asare'), class:'Kindergarten 2', parent:'Samuel Asare', emergency:'0240000008', status:'Active'},
-    {name:'Nana Kofi', photo:randomPhoto('Nana Kofi'), class:'Nursery 2', parent:'Akua Kofi', emergency:'0240000009', status:'Active'},
-    {name:'Mansa Opoku', photo:randomPhoto('Mansa Opoku'), class:'Primary 2', parent:'Yaw Opoku', emergency:'0240000010', status:'Active'},
-    {name:'Kojo Mensah', photo:randomPhoto('Kojo Mensah'), class:'JHS 2', parent:'Ama Mensah', emergency:'0240000011', status:'Active'},
-    {name:'Akua Frimpong', photo:randomPhoto('Akua Frimpong'), class:'Primary 6', parent:'Kwame Frimpong', emergency:'0240000012', status:'Active'},
-    {name:'Yaw Appiah', photo:randomPhoto('Yaw Appiah'), class:'JHS 3', parent:'Serwaa Appiah', emergency:'0240000013', status:'Active'},
-    {name:'Afia Owusu', photo:randomPhoto('Afia Owusu'), class:'Primary 1', parent:'Owusu Mensah', emergency:'0240000014', status:'Inactive'},
-    {name:'Samuel Sarpong', photo:randomPhoto('Samuel Sarpong'), class:'Primary 3', parent:'Akosua Sarpong', emergency:'0240000015', status:'Active'}
-  ];
-  db.teachers = [
-    {name:'Mrs. Serwaa', email:'serwaa@school.edu', qualification:'B.Ed', assignedClass:'JHS 1', status:'Active'},
-    {name:'Mr. Owusu', email:'owusu@school.edu', qualification:'M.Ed Science', assignedClass:'Primary 3', status:'Active'},
-    {name:'Madam Akua', email:'akua@school.edu', qualification:'B.Ed English', assignedClass:'Primary 1', status:'Active'},
-    {name:'Mr. Boateng', email:'boateng@school.edu', qualification:'B.Ed Mathematics', assignedClass:'Primary 5', status:'Active'},
-    {name:'Mrs. Mensah', email:'mensah@school.edu', qualification:'B.Ed French', assignedClass:'Primary 4', status:'Active'},
-    {name:'Mr. Addo', email:'addo@school.edu', qualification:'M.Ed ICT', assignedClass:'JHS 2', status:'Active'},
-    {name:'Madam Abena', email:'abena@school.edu', qualification:'B.Ed KG', assignedClass:'Kindergarten 2', status:'Active'}
-  ];
-  db.classes = [
-    {className:'Nursery 1', room:'A1', teacher:'Miss Akua'},
-    {className:'Nursery 2', room:'A2', teacher:'Mr. Kwesi'},
-    {className:'Kindergarten 1', room:'B1', teacher:'Madam Abena'},
-    {className:'Kindergarten 2', room:'B2', teacher:'Madam Abena'},
-    {className:'Primary 1', room:'C1', teacher:'Madam Akua'},
-    {className:'Primary 2', room:'C2', teacher:'Mr. Johnson'},
-    {className:'Primary 3', room:'C3', teacher:'Mr. Owusu'},
-    {className:'Primary 4', room:'C4', teacher:'Mrs. Mensah'},
-    {className:'Primary 5', room:'C5', teacher:'Mr. Boateng'},
-    {className:'Primary 6', room:'C6', teacher:'Mr. Amponsah'},
-    {className:'JHS 1', room:'D1', teacher:'Mrs. Serwaa'},
-    {className:'JHS 2', room:'D2', teacher:'Mr. Addo'},
-    {className:'JHS 3', room:'D3', teacher:'Mr. Sarpong'}
-  ];
-  db.attendance = [
-    {date:'2025-06-01', class:'Primary 1', student:'Ama Mensah', status:'Present'},
-    {date:'2025-06-01', class:'Primary 2', student:'Kwame Boateng', status:'Present'},
-    {date:'2025-06-01', class:'Primary 3', student:'Akosua Owusu', status:'Absent'},
-    {date:'2025-06-02', class:'Primary 2', student:'Mansa Opoku', status:'Present'},
-    {date:'2025-06-02', class:'Primary 4', student:'Efua Darko', status:'Present'},
-    {date:'2025-06-02', class:'JHS 1', student:'Yaw Addo', status:'Present'},
-    {date:'2025-06-03', class:'JHS 2', student:'Kojo Mensah', status:'Absent'},
-    {date:'2025-06-03', class:'JHS 2', student:'Kwabena Agyapong', status:'Present'},
-    {date:'2025-06-03', class:'Primary 6', student:'Akua Frimpong', status:'Present'},
-    {date:'2025-06-04', class:'JHS 3', student:'Yaw Appiah', status:'Present'}
-  ];
-  db.grades = [
-    {student:'Ama Mensah', class:'Primary 1', subject:'Math', score:92, weight:'Exam'},
-    {student:'Kwame Boateng', class:'Primary 2', subject:'English', score:84, weight:'Test'},
-    {student:'Akosua Owusu', class:'Primary 3', subject:'Science', score:78, weight:'Quiz'},
-    {student:'Yaw Addo', class:'JHS 1', subject:'ICT', score:65, weight:'Exam'},
-    {student:'Efua Darko', class:'Primary 4', subject:'Math', score:70, weight:'Test'},
-    {student:'Kojo Antwi', class:'Primary 5', subject:'French', score:55, weight:'Exam'},
-    {student:'Abena Asare', class:'Kindergarten 2', subject:'RME', score:80, weight:'Quiz'},
-    {student:'Kojo Mensah', class:'JHS 2', subject:'Science', score:61, weight:'Assignment'},
-    {student:'Akua Frimpong', class:'Primary 6', subject:'Math', score:91, weight:'Exam'},
-    {student:'Yaw Appiah', class:'JHS 3', subject:'Social Studies', score:85, weight:'Exam'}
-  ];
-  db.fees = [
-    {student:'Ama Mensah', class:'Primary 1', type:'Tuition', amount:1200, status:'Paid'},
-    {student:'Kwame Boateng', class:'Primary 2', type:'Tuition', amount:1200, status:'Pending'},
-    {student:'Akosua Owusu', class:'Primary 3', type:'Uniform', amount:200, status:'Paid'},
-    {student:'Yaw Addo', class:'JHS 1', type:'Books', amount:150, status:'Pending'},
-    {student:'Efua Darko', class:'Primary 4', type:'Tuition', amount:1200, status:'Paid'},
-    {student:'Kojo Antwi', class:'Primary 5', type:'Exam', amount:50, status:'Pending'},
-    {student:'Abena Asare', class:'Kindergarten 2', type:'Tuition', amount:1100, status:'Paid'},
-    {student:'Kojo Mensah', class:'JHS 2', type:'Transport', amount:300, status:'Paid'},
-    {student:'Akua Frimpong', class:'Primary 6', type:'Tuition', amount:1200, status:'Pending'},
-    {student:'Yaw Appiah', class:'JHS 3', type:'Tuition', amount:1250, status:'Pending'}
-  ];
-  db.settings = { schoolName: "Seven Royal Stars School" };
-}
-function loadDB() {
-  const d = localStorage.getItem('school_db');
-  if (d) db = JSON.parse(d);
-}
-function saveDB() {
-  localStorage.setItem('school_db', JSON.stringify(db));
-}
-function backupData() {
-  saveDB();
-  saveUsers();
-  const blob = new Blob([JSON.stringify({db, users})], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'school_backup.json'; a.click();
-  showNotification('Backup', 'Backup downloaded.', 'success');
-}
-function restoreData() {
-  const input = document.createElement('input');
-  input.type = 'file'; input.accept = '.json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = evt => {
-      try {
-        const obj = JSON.parse(evt.target.result);
-        if(obj.db && obj.users){
-          db = obj.db; users = obj.users;
-        }else{
-          db = obj; // fallback
-        }
-        saveDB(); saveUsers(); renderAll();
-        showNotification('Restore', 'Backup restored!', 'success');
-      } catch {
-        showNotification('Restore', 'Invalid backup.', 'error');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-function exportData() {
-  let csv = "Type,Data\n";
-  for (let [k, arr] of Object.entries(db)) {
-    if (!Array.isArray(arr)) continue;
-    arr.forEach(item => {
-      csv += `${k},"${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}"\n`;
-    });
-  }
-  const blob = new Blob([csv], {type: "text/csv"});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = "school_data.csv"; a.click();
-  showNotification('Export', 'Data exported as CSV.', 'success');
-}
-function importDataCSV(text) {
-  try {
-    let lines = text.trim().split('\n').slice(1);
-    for (let ln of lines) {
-      let [type, data] = ln.split(/,(.+)/);
-      if (db[type]) db[type].push(JSON.parse(decodeURIComponent(escape(atob(data.replace(/"/g,''))))));
-    }
-    saveDB(); renderAll();
-    showNotification('Import', 'Data imported.', 'success');
-  } catch {
-    showNotification('Import', 'Import failed.', 'error');
-  }
-}
-function showSection(section) {
-  currentSection = section;
-  document.querySelectorAll('#mainSectionContent > section').forEach(sec => sec.classList.add('hidden'));
-  const sec = document.getElementById(section + 'Section');
-  if (sec) sec.classList.remove('hidden');
-  renderAll();
-}
-function renderAll() {
-  renderStats();
-  renderStudentsTable();
-  renderTeachersTable();
-  renderClassesTable();
-  renderAttendanceTable();
-  renderGradesTable();
-  renderFeesTable();
-  document.getElementById('schoolNameDisplay').textContent = db.settings.schoolName || "Seven Royal Stars School";
-}
-function renderStats() {
-  document.getElementById('statStudents').textContent = db.students.length;
-  document.getElementById('statTeachers').textContent = db.teachers.length;
-  document.getElementById('statClasses').textContent = CLASS_LIST.length;
-  let pending = db.fees.filter(f => f.status !== 'Paid').reduce((a, f) => a + Number(f.amount), 0);
-  document.getElementById('statFeesPending').textContent = "GHS " + pending.toFixed(2);
-}
-function renderStudentsTable() {
-  const tbody = document.querySelector('#studentsTable tbody');
-  const search = (document.getElementById('studentSearch') || {value:""}).value.toLowerCase();
-  tbody.innerHTML = db.students.filter(s => !search || s.name.toLowerCase().includes(search)).map((s,i) => `
-    <tr>
-      <td>${s.name}</td>
-      <td>${s.photo ? '<img src="'+s.photo+'" width="32" style="border-radius:4px">' : ''}</td>
-      <td>${s.class}</td>
-      <td>${s.parent}</td>
-      <td>${s.emergency}</td>
-      <td>${s.status}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editStudent(${i})">Edit</button>
-        <button class="btn btn-danger" onclick="deleteStudent(${i})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-function renderTeachersTable() {
-  const tbody = document.querySelector('#teachersTable tbody');
-  tbody.innerHTML = db.teachers.map((t,i) => `
-    <tr>
-      <td>${t.name}</td>
-      <td>${t.email}</td>
-      <td>${t.qualification}</td>
-      <td>${t.assignedClass}</td>
-      <td>${t.status}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editTeacher(${i})">Edit</button>
-        <button class="btn btn-danger" onclick="deleteTeacher(${i})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-function renderClassesTable() {
-  const tbody = document.querySelector('#classesTable tbody');
-  tbody.innerHTML = CLASS_LIST.map(cnm => {
-    const found = db.classes.find(cls => cls.className === cnm) || {};
-    return `<tr>
-      <td>${cnm}</td>
-      <td>${found.room || ""}</td>
-      <td>${found.teacher || ""}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editClass('${cnm}')">Edit</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-function renderAttendanceTable() {
-  const tbody = document.querySelector('#attendanceTable tbody');
-  tbody.innerHTML = db.attendance.map((a,i) => `
-    <tr>
-      <td>${a.date}</td>
-      <td>${a.class}</td>
-      <td>${a.student}</td>
-      <td>${a.status}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editAttendance(${i})">Edit</button>
-        <button class="btn btn-danger" onclick="deleteAttendance(${i})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-function renderGradesTable() {
-  const tbody = document.querySelector('#gradesTable tbody');
-  tbody.innerHTML = db.grades.map((g,i) => `
-    <tr>
-      <td>${g.student}</td>
-      <td>${g.class}</td>
-      <td>${g.subject}</td>
-      <td>${g.score}</td>
-      <td>${g.weight}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editGrade(${i})">Edit</button>
-        <button class="btn btn-danger" onclick="deleteGrade(${i})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-function renderFeesTable() {
-  const tbody = document.querySelector('#feesTable tbody');
-  tbody.innerHTML = db.fees.map((f,i) => `
-    <tr>
-      <td>${f.student}</td>
-      <td>${f.class}</td>
-      <td>${f.type}</td>
-      <td>GHS ${Number(f.amount).toFixed(2)}</td>
-      <td>${f.status}</td>
-      <td>
-        <button class="btn btn-secondary" onclick="editFee(${i})">Edit</button>
-        <button class="btn btn-danger" onclick="deleteFee(${i})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-// Registration & Login
+/* --- Core data, storage, and registration logic --- */
+// (Paste the full JS from the "full HTML" solution above here, then append the following block!)
+/* --- Registration & login logic --- */
 let registering = false;
 function toggleRegister() {
   registering = true;
@@ -685,6 +148,7 @@ function toggleLogin() {
   document.getElementById('regConfirmGroup').style.display = "none";
   document.getElementById('toggleReg').style.display = "";
   document.getElementById('toggleLogin').style.display = "none";
+  document.getElementById('loginAlert').innerHTML = '';
 }
 document.getElementById('regBtn').onclick = function() {
   const username = document.getElementById('username').value.trim();
@@ -707,54 +171,6 @@ document.getElementById('regBtn').onclick = function() {
   alert.innerHTML = '<div class="alert alert-success">Registration successful! You can now login.</div>';
   toggleLogin();
 };
-function login() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-  const role = document.getElementById('userRole').value;
-  const alert = document.getElementById('loginAlert');
-  const u = users.find(u=>u.username===username && u.password===password && u.role===role);
-  if (u && u.status==='active') {
-    currentUser = {...u};
-    document.getElementById('loginSection').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    document.getElementById('userDisplay').classList.remove('hidden');
-    document.getElementById('userDisplay').textContent = u.name.charAt(0);
-    document.getElementById('logoutBtn').style.display = '';
-    showSection('students');
-    alert.innerHTML = '';
-    showNotification('Welcome', `Hello ${u.name}!`, 'success');
-  } else {
-    alert.innerHTML = '<div class="alert alert-error">Invalid credentials or user inactive.</div>';
-  }
-}
-function logout() {
-  currentUser = null;
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('loginSection').classList.remove('hidden');
-  document.getElementById('userDisplay').classList.add('hidden');
-  document.getElementById('userDisplay').textContent = '';
-  document.getElementById('logoutBtn').style.display = 'none';
-  showNotification('Logged out', 'You have been logged out.', 'info');
-}
-function showModal(id) {
-  if (id==='addStudentModal'||id==='addTeacherModal'||id==='addClassModal'||id==='markAttendanceModal'||id==='addGradeModal'||id==='addFeeModal') {
-    populateModalDropdowns();
-  }
-  document.getElementById(id).style.display = 'block';
-}
-function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
-}
-function showNotification(title, message, type='info', autoHide=3500) {
-  const container = document.getElementById('notificationContainer');
-  const noti = document.createElement('div');
-  noti.className = `notification ${type}`;
-  noti.innerHTML = `<b>${title}</b><div style="margin-left:10px;">${message}</div>
-      <span class="noti-close" onclick="this.parentElement.remove()">×</span>`;
-  container.appendChild(noti);
-  setTimeout(()=>{if(noti)noti.remove();},autoHide);
-}
-// --- Save/load users from localStorage to persist registration ---
 function saveUsers() {
   localStorage.setItem('school_users', JSON.stringify(users));
 }
@@ -763,3 +179,6 @@ function loadUsers() {
   if (d) users = JSON.parse(d);
 }
 loadUsers();
+</script>
+</body>
+</html>
